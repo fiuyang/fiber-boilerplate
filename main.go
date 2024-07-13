@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"log"
-	handler "scylla/handler"
+	"scylla/handler"
 	"scylla/pkg/config"
 	"scylla/pkg/exception"
 	"scylla/pkg/utils"
@@ -31,7 +31,7 @@ import (
 func main() {
 	loadConfig, err := config.LoadConfig(".")
 	if err != nil {
-		panic(exception.NewInternalServerError(err.Error()))
+		panic(exception.NewInternalServerErrorHandler(err.Error()))
 	}
 
 	//Database
@@ -64,7 +64,7 @@ func main() {
 	)
 
 	app := fiber.New(fiber.Config{
-		ErrorHandler: exception.ErrorHandlers,
+		ErrorHandler: exception.ExceptionHandlers,
 	})
 	app.Use(recover.New())
 	app.Use(requestid.New())

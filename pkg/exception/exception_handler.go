@@ -11,7 +11,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func ErrorHandlers(ctx *fiber.Ctx, err error) error {
+func ExceptionHandlers(ctx *fiber.Ctx, err error) error {
 	if notFoundError(ctx, err) {
 		return nil
 	} else if validationError(ctx, err) {

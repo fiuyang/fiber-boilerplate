@@ -23,6 +23,7 @@ func NewDmsHandler(service service.DmsService) *DmsHandler {
 }
 
 // Note             godoc
+//
 //	@Summary		Get All vehicles.
 //	@Description	Get All vehicles.
 //	@Produce		application/json
@@ -39,7 +40,7 @@ func (handler *DmsHandler) GetVehicle(ctx *fiber.Ctx) error {
 	var dataFilter entity.GeneralQueryFilter
 
 	if err := ctx.QueryParser(&dataFilter); err != nil {
-		panic(exception.NewBadRequestError(err.Error()))
+		panic(exception.NewBadRequestHandler(err.Error()))
 	}
 
 	response, paging, err := handler.dmsService.GetVehicle(c, dataFilter)

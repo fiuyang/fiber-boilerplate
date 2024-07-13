@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"gorm.io/gorm"
 	"scylla/entity"
@@ -11,9 +12,9 @@ import (
 )
 
 type CustomerRepo interface {
-	Insert(ctx context.Context, data model.Customer)
+	Insert(ctx context.Context, data model.Customer) error
 	InsertBatch(ctx context.Context, data []model.Customer, batchSize int) error
-	Update(ctx context.Context, data model.Customer)
+	Update(ctx context.Context, data model.Customer) error
 	DeleteBatch(ctx context.Context, Id []int) error
 	FindById(ctx context.Context, Id int) (data model.Customer, err error)
 	FindAll(ctx context.Context) (domain []entity.CustomerResponse, err error)
@@ -28,9 +29,12 @@ func NewCustomerRepoImpl(db *gorm.DB) CustomerRepo {
 	return &CustomerRepoImpl{db: db}
 }
 
-func (repo *CustomerRepoImpl) Insert(ctx context.Context, data model.Customer) {
+func (repo *CustomerRepoImpl) Insert(ctx context.Context, data model.Customer) error {
 	result := repo.db.WithContext(ctx).Create(&data)
-	helper.ErrorPanic(result.Error)
+	if result.Error != nil {
+		helper.ErrorPanic(result.Error)
+	}
+	return nil
 }
 
 func (repo *CustomerRepoImpl) InsertBatch(ctx context.Context, data []model.Customer, batchSize int) error {
@@ -51,15 +55,24 @@ func (repo *CustomerRepoImpl) InsertBatch(ctx context.Context, data []model.Cust
 	return nil
 }
 
-func (repo *CustomerRepoImpl) Update(ctx context.Context, data model.Customer) {
+func (repo *CustomerRepoImpl) Update(ctx context.Context, data model.Customer) error {
 	result := repo.db.WithContext(ctx).Updates(&data)
-	helper.ErrorPanic(result.Error)
+	if result.RowsAffected == 0 {
+		return errors.New("record not found")
+	}
+	if result.Error != nil {
+		helper.ErrorPanic(result.Error)
+	}
+
+	return nil
 }
 
 func (repo *CustomerRepoImpl) DeleteBatch(ctx context.Context, Id []int) error {
 	var data model.Customer
 	result := repo.db.WithContext(ctx).Where("id IN (?)", Id).Delete(&data)
-
+	if result.RowsAffected == 0 {
+		return errors.New("record not found")
+	}
 	if result.Error != nil {
 		helper.ErrorPanic(result.Error)
 	}
@@ -69,6 +82,9 @@ func (repo *CustomerRepoImpl) DeleteBatch(ctx context.Context, Id []int) error {
 
 func (repo *CustomerRepoImpl) FindById(ctx context.Context, Id int) (data model.Customer, err error) {
 	result := repo.db.WithContext(ctx).First(&data, Id)
+	if result.RowsAffected == 0 {
+		return data, errors.New("record not found")
+	}
 	if result.Error != nil {
 		return data, result.Error
 	}

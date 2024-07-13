@@ -47,7 +47,7 @@ func (handler *CustomerHandler) Create(ctx *fiber.Ctx) error {
 	webResponse := entity.Response{
 		Code:    http.StatusCreated,
 		Status:  "Created",
-		Message: "Created Successfully",
+		Message: "Created Successful",
 	}
 	utils.ResponseInterceptor(c, &webResponse)
 	return ctx.Status(http.StatusCreated).JSON(webResponse)
@@ -78,7 +78,7 @@ func (handler *CustomerHandler) CreateBatch(ctx *fiber.Ctx) error {
 	webResponse := entity.Response{
 		Code:    http.StatusCreated,
 		Status:  "Created",
-		Message: "Created Batch Successfully",
+		Message: "Created Batch Successful",
 	}
 	utils.ResponseInterceptor(c, &webResponse)
 	return ctx.Status(http.StatusCreated).JSON(webResponse)
@@ -108,7 +108,7 @@ func (handler *CustomerHandler) Update(ctx *fiber.Ctx) error {
 	var params entity.CustomerParams
 
 	if err := ctx.ParamsParser(&params); err != nil {
-		panic(exception.NewBadRequestError(err.Error()))
+		panic(exception.NewBadRequestHandler(err.Error()))
 	}
 
 	request.ID = params.CustomerId
@@ -118,7 +118,7 @@ func (handler *CustomerHandler) Update(ctx *fiber.Ctx) error {
 	webResponse := entity.Response{
 		Code:    http.StatusOK,
 		Status:  "OK",
-		Message: "Submit Shipment Preview Successfully",
+		Message: "Update Successful",
 		Data:    nil,
 	}
 	utils.ResponseInterceptor(c, &webResponse)
@@ -150,7 +150,7 @@ func (handler *CustomerHandler) DeleteBatch(ctx *fiber.Ctx) error {
 	webResponse := entity.Response{
 		Code:    http.StatusOK,
 		Status:  "OK",
-		Message: "Delete Batch Successfully",
+		Message: "Delete Batch Successful",
 		Data:    nil,
 	}
 	utils.ResponseInterceptor(c, &webResponse)
@@ -176,7 +176,7 @@ func (handler *CustomerHandler) FindById(ctx *fiber.Ctx) error {
 	var params entity.CustomerParams
 
 	if err := ctx.ParamsParser(&params); err != nil {
-		panic(exception.NewBadRequestError(err.Error()))
+		panic(exception.NewBadRequestHandler(err.Error()))
 	}
 
 	data := handler.customerService.FindById(c, params)
@@ -215,7 +215,7 @@ func (handler *CustomerHandler) FindAllPaging(ctx *fiber.Ctx) error {
 	var dataFilter entity.CustomerQueryFilter
 
 	if err := ctx.QueryParser(&dataFilter); err != nil {
-		panic(exception.NewBadRequestError(err.Error()))
+		panic(exception.NewBadRequestHandler(err.Error()))
 	}
 
 	response, paging := handler.customerService.FindAllPaging(c, dataFilter)

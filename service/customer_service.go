@@ -44,7 +44,10 @@ func (service *CustomerServiceImpl) Create(ctx context.Context, request entity.C
 		Address:  request.Address,
 	}
 
-	service.customerRepo.Insert(ctx, dataset)
+	err = service.customerRepo.Insert(ctx, dataset)
+	if err != nil {
+		panic(exception.NewInternalServerErrorHandler(err.Error()))
+	}
 }
 
 func (service *CustomerServiceImpl) CreateBatch(ctx context.Context, request entity.CreateCustomerBatchRequest) {
@@ -66,7 +69,7 @@ func (service *CustomerServiceImpl) CreateBatch(ctx context.Context, request ent
 
 	err = service.customerRepo.InsertBatch(ctx, customers, batchSize)
 	if err != nil {
-		panic(exception.NewInternalServerError(err.Error()))
+		panic(exception.NewInternalServerErrorHandler(err.Error()))
 	}
 }
 
@@ -76,7 +79,7 @@ func (service *CustomerServiceImpl) Update(ctx context.Context, request entity.U
 
 	dataset, err := service.customerRepo.FindById(ctx, request.ID)
 	if err != nil {
-		panic(exception.NewNotFoundError(err.Error()))
+		panic(exception.NewNotFoundHandler(err.Error()))
 	}
 
 	dataset.Username = request.Username
@@ -84,21 +87,27 @@ func (service *CustomerServiceImpl) Update(ctx context.Context, request entity.U
 	dataset.Phone = request.Phone
 	dataset.Address = request.Address
 
-	service.customerRepo.Update(ctx, dataset)
+	err = service.customerRepo.Update(ctx, dataset)
+	if err != nil {
+		panic(exception.NewNotFoundHandler(err.Error()))
+	}
 }
 
 func (service *CustomerServiceImpl) DeleteBatch(ctx context.Context, request entity.DeleteBatchCustomerRequest) {
 	err := service.validate.Struct(request)
 	helper.ErrorPanic(err)
 
-	service.customerRepo.DeleteBatch(ctx, request.ID)
+	err = service.customerRepo.DeleteBatch(ctx, request.ID)
+	if err != nil {
+		panic(exception.NewNotFoundHandler(err.Error()))
+	}
 }
 
 func (service *CustomerServiceImpl) FindById(ctx context.Context, request entity.CustomerParams) (response entity.CustomerResponse) {
 	result, err := service.customerRepo.FindById(ctx, request.CustomerId)
 
 	if err != nil {
-		panic(exception.NewNotFoundError(err.Error()))
+		panic(exception.NewNotFoundHandler(err.Error()))
 	}
 
 	helper.Automapper(result, &response)
@@ -109,7 +118,7 @@ func (service *CustomerServiceImpl) FindAll(ctx context.Context) (response []ent
 	result, err := service.customerRepo.FindAll(ctx)
 
 	if err != nil {
-		panic(exception.NewInternalServerError(err.Error()))
+		panic(exception.NewInternalServerErrorHandler(err.Error()))
 	}
 
 	for _, row := range result {

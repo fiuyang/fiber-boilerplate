@@ -25,7 +25,7 @@ func (service *DmsServiceImpl) GetVehicle(ctx context.Context, dataFilter entity
 	config, err := config.LoadConfig(".")
 
 	if err != nil {
-		exception.NewInternalServerError(err.Error())
+		panic(exception.NewInternalServerErrorHandler(err.Error()))
 	}
 
 	endpointURL := fmt.Sprintf("%s/master/v1/vehicles?q=&page=%d&limit=%d&is_active=%d", config.KongUrl, dataFilter.Page, dataFilter.Limit, dataFilter.IsActive)
