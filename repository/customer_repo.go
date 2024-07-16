@@ -17,8 +17,9 @@ type CustomerRepo interface {
 	Update(ctx context.Context, data model.Customer) error
 	DeleteBatch(ctx context.Context, Id []int) error
 	FindById(ctx context.Context, Id int) (data model.Customer, err error)
-	FindAll(ctx context.Context) (domain []entity.CustomerResponse, err error)
+	FindAll(ctx context.Context, dataFilter entity.CustomerQueryFilter) (domain []entity.CustomerResponse, err error)
 	FindAllPaging(ctx context.Context, dataFilter entity.CustomerQueryFilter) (domain []entity.CustomerResponse)
+	CheckColumnExists(ctx context.Context, column string, value interface{}) bool
 }
 
 type CustomerRepoImpl struct {
@@ -92,8 +93,26 @@ func (repo *CustomerRepoImpl) FindById(ctx context.Context, Id int) (data model.
 	return data, nil
 }
 
-func (repo *CustomerRepoImpl) FindAll(ctx context.Context) (domain []entity.CustomerResponse, err error) {
-	rows, err := repo.db.WithContext(ctx).Raw("select * from customers").Rows()
+func (repo *CustomerRepoImpl) FindAll(ctx context.Context, dataFilter entity.CustomerQueryFilter) (domain []entity.CustomerResponse, err error) {
+	query := "SELECT id, username, email, phone, address, created_at FROM customers"
+	args := []interface{}{}
+
+	if dataFilter.Username != "" {
+		query += " WHERE username = ?"
+		args = append(args, dataFilter.Username)
+	}
+
+	if dataFilter.Email != "" {
+		query += " WHERE email = ?"
+		args = append(args, dataFilter.Email)
+	}
+
+	if dataFilter.StartDate != "" && dataFilter.EndDate != "" {
+		query += " WHERE created_at BETWEEN ? AND ?"
+		args = append(args, dataFilter.StartDate, dataFilter.EndDate)
+	}
+
+	rows, err := repo.db.WithContext(ctx).Raw(query, args...).Rows()
 	if err != nil {
 		return nil, rows.Err()
 	}
@@ -163,4 +182,14 @@ func (repo *CustomerRepoImpl) FindAllPaging(ctx context.Context, dataFilter enti
 	helper.ErrorPanic(result.Error)
 
 	return domain
+}
+
+func (repo *CustomerRepoImpl) CheckColumnExists(ctx context.Context, column string, value interface{}) bool {
+	var exists bool
+	query := fmt.Sprintf("SELECT EXISTS(SELECT 1 FROM customers WHERE %s = ?)", column)
+	err := repo.db.WithContext(ctx).Raw(query, value).Scan(&exists).Error
+	if err != nil {
+		return false
+	}
+	return exists
 }

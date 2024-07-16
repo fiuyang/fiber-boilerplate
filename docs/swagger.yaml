@@ -28,6 +28,8 @@ definitions:
     properties:
       address:
         type: string
+      created_at:
+        type: string
       email:
         type: string
       id:
@@ -215,6 +217,14 @@ paths:
       - description: page
         in: query
         name: page
+        type: string
+      - description: username
+        in: query
+        name: username
+        type: string
+      - description: email
+        in: query
+        name: email
         type: string
       - description: start_date
         in: query
@@ -453,6 +463,91 @@ paths:
       summary: Create customer batch
       tags:
       - customers
+  /customers/export:
+    get:
+      description: Export Excel customer.
+      parameters:
+      - description: start_date
+        in: query
+        name: start_date
+        type: string
+      - description: end_date
+        in: query
+        name: end_date
+        type: string
+      - description: username
+        in: query
+        name: username
+        type: string
+      - description: email
+        in: query
+        name: email
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Data
+          schema:
+            allOf:
+            - $ref: '#/definitions/entity.JsonSuccess'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/entity.JsonBadRequest'
+        "404":
+          description: Data not found
+          schema:
+            $ref: '#/definitions/entity.JsonNotFound'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/entity.JsonInternalServerError'
+      summary: Export Excel customer.
+      tags:
+      - customers
+  /customers/import:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Import Excel customer.
+      parameters:
+      - description: Import Excel customer
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Data
+          schema:
+            allOf:
+            - $ref: '#/definitions/entity.JsonSuccess'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/entity.JsonBadRequest'
+        "404":
+          description: Data not found
+          schema:
+            $ref: '#/definitions/entity.JsonNotFound'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/entity.JsonInternalServerError'
+      summary: Import Excel customer.
+      tags:
+      - customers
   /vehicles:
     get:
       description: Get All vehicles.
@@ -476,7 +571,7 @@ paths:
           description: Data
           schema:
             allOf:
-            - $ref: '#/definitions/entity.JsonCreated'
+            - $ref: '#/definitions/entity.Response'
             - properties:
                 data:
                   items:

@@ -1,8 +1,11 @@
 package utils
 
 import (
+	"fmt"
 	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
+	"mime/multipart"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"scylla/pkg/helper"
@@ -70,6 +73,52 @@ func InitializeValidator(db *gorm.DB) *validator.Validate {
 		return helper.ValidateUnique(db, fl)
 	})
 
+	_ = validate.RegisterValidation("allowedMimeTypeExcel", func(fl validator.FieldLevel) bool {
+		file, ok := fl.Field().Interface().(*multipart.FileHeader)
+		if !ok {
+			return false
+		}
+
+		allowedExtensions := map[string]bool{
+			".xls":  true,
+			".xlsx": true,
+		}
+
+		fileExtension := getFileExtension(file.Filename)
+		fmt.Println("fileExtension", fileExtension)
+		return allowedExtensions[fileExtension]
+	})
+
+	_ = validate.RegisterValidation("allowedMimeTypeDoc", func(fl validator.FieldLevel) bool {
+		file, ok := fl.Field().Interface().(*multipart.FileHeader)
+		if !ok {
+			return false
+		}
+
+		allowedExtensions := map[string]bool{
+			".doc": true,
+		}
+
+		fileExtension := getFileExtension(file.Filename)
+		return allowedExtensions[fileExtension]
+	})
+
+	_ = validate.RegisterValidation("allowedMimeTypeImage", func(fl validator.FieldLevel) bool {
+		file, ok := fl.Field().Interface().(string)
+		if !ok {
+			return false
+		}
+
+		allowedExtensions := map[string]bool{
+			".jpeg": true,
+			".jpg":  true,
+			".png":  true,
+		}
+
+		fileExtension := getFileExtension(file)
+		return allowedExtensions[fileExtension]
+	})
+
 	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
 		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
 		if name == "" {
@@ -79,4 +128,9 @@ func InitializeValidator(db *gorm.DB) *validator.Validate {
 	})
 
 	return validate
+}
+
+func getFileExtension(filename string) string {
+	ext := strings.ToLower(filepath.Ext(filename))
+	return ext
 }

@@ -2,13 +2,13 @@ package main
 
 import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"log"
+	"scylla/entity"
 	"scylla/handler"
 	"scylla/pkg/config"
 	"scylla/pkg/exception"
 	"scylla/pkg/utils"
 	"scylla/repository"
-	"scylla/router"
+	"scylla/routes"
 	"scylla/service"
 
 	"github.com/gofiber/fiber/v2"
@@ -58,7 +58,8 @@ func main() {
 	customerHandler := handler.NewCustomerHandler(customerService)
 	dmsHandler := handler.NewDmsHandler(dmsService)
 
-	routes := router.NewRouter(
+	//routes v1
+	routesV1 := routes.NewRoutesV1(
 		dmsHandler,
 		customerHandler,
 	)
@@ -68,20 +69,24 @@ func main() {
 	})
 	app.Use(recover.New())
 	app.Use(requestid.New())
+	app.Use(cors.New())
 	app.Use(logger.New(logger.Config{
 		Format: "[${locals:requestid}] ${ip} - ${method} ${status} ${path} - ${latency}\n",
 	}))
-	app.Use(cors.New())
-
-	app.Mount("/api/v1", routes)
+	app.Mount("/api/v1", routesV1)
 	app.Get("/docs/*", fiberSwagger.WrapHandler)
+	//endpoint not found
 	app.Use(func(ctx *fiber.Ctx) error {
-		return ctx.Status(404).JSON(fiber.Map{
-			"code":     404,
-			"status":   "NOT FOUND",
-			"errors":   "Page Not Found",
-			"trace_id": ctx.Locals("requestid").(string),
+		return ctx.Status(fiber.StatusNotFound).JSON(entity.Error{
+			Code:    fiber.StatusNotFound,
+			Status:  "NOT FOUND",
+			Errors:  "Page Not Found",
+			TraceID: ctx.Locals("requestid").(string),
 		})
 	})
-	log.Fatal(app.Listen(":" + loadConfig.ServerPort))
+	//start
+	err = app.Listen(":" + loadConfig.ServerPort)
+	if err != nil {
+		panic(err)
+	}
 }

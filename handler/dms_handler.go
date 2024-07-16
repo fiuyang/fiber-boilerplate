@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"github.com/gofiber/fiber/v2"
-	"net/http"
 	"scylla/entity"
 	"scylla/pkg/exception"
 	"scylla/pkg/helper"
@@ -47,11 +46,11 @@ func (handler *DmsHandler) GetVehicle(ctx *fiber.Ctx) error {
 	helper.ErrorPanic(err)
 
 	webResponse := entity.Response{
-		Code:   http.StatusOK,
+		Code:   fiber.StatusOK,
 		Status: "OK",
 		Data:   response,
 		Meta:   &paging,
 	}
 	utils.ResponseInterceptor(c, &webResponse)
-	return ctx.Status(http.StatusOK).JSON(webResponse)
+	return ctx.Status(fiber.StatusOK).JSON(webResponse)
 }

@@ -1,4 +1,4 @@
-package router
+package routes
 
 import (
 	"scylla/handler"
@@ -6,23 +6,25 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func NewRouter(
+func NewRoutesV1(
 	dmsHandler *handler.DmsHandler,
 	customerHandler *handler.CustomerHandler,
 ) *fiber.App {
-	service := fiber.New()
-
+	app := fiber.New()
+	routes := app.Group("")
 	//api third party
-	service.Get("/vehicles", dmsHandler.GetVehicle)
+	routes.Get("/vehicles", dmsHandler.GetVehicle)
 
 	//customer
-	customerRouter := service.Group("/customers")
+	customerRouter := routes.Group("/customers")
 	customerRouter.Get("", customerHandler.FindAllPaging)
+	customerRouter.Get("/export", customerHandler.Export)
 	customerRouter.Get("/:customerId", customerHandler.FindById)
 	customerRouter.Post("", customerHandler.Create)
 	customerRouter.Post("/batch", customerHandler.CreateBatch)
 	customerRouter.Patch("/:customerId", customerHandler.Update)
 	customerRouter.Delete("/batch", customerHandler.DeleteBatch)
+	customerRouter.Post("/import", customerHandler.Import)
 
-	return service
+	return app
 }

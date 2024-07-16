@@ -1,5 +1,7 @@
 package entity
 
+import "mime/multipart"
+
 type CustomerResponse struct {
 	ID        int    `json:"id"`
 	Username  string `json:"username"`
@@ -30,6 +32,10 @@ type UpdateCustomerRequest struct {
 
 type DeleteBatchCustomerRequest struct {
 	ID []int `json:"id" validate:"required,notEmptyIntSlice"`
+}
+
+type UploadCustomerRequest struct {
+	File *multipart.FileHeader `form:"file" json:"file" validate:"allowedMimeTypeExcel"`
 }
 
 type CustomerParams struct {

@@ -2,7 +2,6 @@ package exception
 
 import (
 	"fmt"
-	"net/http"
 	"scylla/entity"
 	"strings"
 	"unicode"
@@ -15,6 +14,8 @@ func ExceptionHandlers(ctx *fiber.Ctx, err error) error {
 	if notFoundError(ctx, err) {
 		return nil
 	} else if validationError(ctx, err) {
+		return nil
+	} else if excelValidation(ctx, err) {
 		return nil
 	} else if badRequestError(ctx, err) {
 		return nil
@@ -81,8 +82,8 @@ func validationError(ctx *fiber.Ctx, err interface{}) bool {
 			}
 		}
 
-		ctx.Status(http.StatusBadRequest).JSON(entity.Error{
-			Code:    http.StatusBadRequest,
+		ctx.Status(fiber.StatusBadRequest).JSON(entity.Error{
+			Code:    fiber.StatusBadRequest,
 			Status:  "BAD REQUEST",
 			Errors:  report,
 			TraceID: ctx.Locals("requestid").(string),
@@ -95,8 +96,8 @@ func validationError(ctx *fiber.Ctx, err interface{}) bool {
 func notFoundError(ctx *fiber.Ctx, err interface{}) bool {
 	exception, ok := err.(*NotFoundErrorStruct)
 	if ok {
-		ctx.Status(http.StatusNotFound).JSON(entity.Error{
-			Code:    http.StatusNotFound,
+		ctx.Status(fiber.StatusNotFound).JSON(entity.Error{
+			Code:    fiber.StatusNotFound,
 			Status:  "NOT FOUND",
 			Errors:  exception.Error(),
 			TraceID: ctx.Locals("requestid").(string),
@@ -109,10 +110,24 @@ func notFoundError(ctx *fiber.Ctx, err interface{}) bool {
 func badRequestError(ctx *fiber.Ctx, err interface{}) bool {
 	exception, ok := err.(*BadRequestErrorStruct)
 	if ok {
-		ctx.Status(http.StatusBadRequest).JSON(entity.Error{
-			Code:    http.StatusBadRequest,
-			Status:  "BAD REQUEST",
+		ctx.Status(fiber.StatusBadRequest).JSON(entity.Error{
+			Code:    fiber.StatusBadRequest,
+			Status:  "BAD REQUESTsss",
 			Errors:  exception.Error(),
+			TraceID: ctx.Locals("requestid").(string),
+		})
+		return true
+	}
+	return false
+}
+
+func excelValidation(ctx *fiber.Ctx, err interface{}) bool {
+	exception, ok := err.(*ExcelValidation)
+	if ok {
+		ctx.Status(fiber.StatusBadRequest).JSON(entity.Error{
+			Code:    fiber.StatusBadRequest,
+			Status:  "BAD REQUEST",
+			Errors:  exception.Errors,
 			TraceID: ctx.Locals("requestid").(string),
 		})
 		return true
@@ -123,8 +138,8 @@ func badRequestError(ctx *fiber.Ctx, err interface{}) bool {
 func unauthorizedError(ctx *fiber.Ctx, err interface{}) bool {
 	exception, ok := err.(*UnauthorizedErrorStruct)
 	if ok {
-		ctx.Status(http.StatusUnauthorized).JSON(entity.Error{
-			Code:    http.StatusUnauthorized,
+		ctx.Status(fiber.StatusUnauthorized).JSON(entity.Error{
+			Code:    fiber.StatusUnauthorized,
 			Status:  "UNAUTHORIZED",
 			Errors:  exception.Error(),
 			TraceID: ctx.Locals("requestid").(string),
@@ -137,8 +152,8 @@ func unauthorizedError(ctx *fiber.Ctx, err interface{}) bool {
 func internalServerError(ctx *fiber.Ctx, err interface{}) bool {
 	exception, ok := err.(*InternalServerErrorStruct)
 	if ok {
-		ctx.Status(http.StatusInternalServerError).JSON(entity.Error{
-			Code:    http.StatusInternalServerError,
+		ctx.Status(fiber.StatusInternalServerError).JSON(entity.Error{
+			Code:    fiber.StatusInternalServerError,
 			Status:  "INTERNAL SERVER ERROR",
 			Errors:  exception.Error(),
 			TraceID: ctx.Locals("requestid").(string),
