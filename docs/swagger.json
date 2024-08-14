@@ -20,6 +20,12 @@
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "true/false",
+                        "name": "all",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "limit",
                         "name": "limit",
                         "in": "query"
@@ -67,7 +73,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/entity.Response"
+                                    "$ref": "#/definitions/dto.Response"
                                 },
                                 {
                                     "type": "object",
@@ -75,7 +81,7 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/entity.CustomerResponse"
+                                                "$ref": "#/definitions/dto.CustomerResponse"
                                             }
                                         }
                                     }
@@ -86,19 +92,19 @@
                     "400": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/entity.JsonBadRequest"
+                            "$ref": "#/definitions/dto.JsonBadRequest"
                         }
                     },
                     "404": {
                         "description": "Data not found",
                         "schema": {
-                            "$ref": "#/definitions/entity.JsonNotFound"
+                            "$ref": "#/definitions/dto.JsonNotFound"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/entity.JsonInternalServerError"
+                            "$ref": "#/definitions/dto.JsonInternalServerError"
                         }
                     }
                 }
@@ -144,7 +150,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/entity.JsonCreated"
+                                    "$ref": "#/definitions/dto.JsonCreated"
                                 },
                                 {
                                     "type": "object",
@@ -160,19 +166,19 @@
                     "400": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/entity.JsonBadRequest"
+                            "$ref": "#/definitions/dto.JsonBadRequest"
                         }
                     },
                     "404": {
                         "description": "Data not found",
                         "schema": {
-                            "$ref": "#/definitions/entity.JsonNotFound"
+                            "$ref": "#/definitions/dto.JsonNotFound"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/entity.JsonInternalServerError"
+                            "$ref": "#/definitions/dto.JsonInternalServerError"
                         }
                     }
                 }
@@ -195,7 +201,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entity.CreateCustomerBatchRequest"
+                            "$ref": "#/definitions/dto.CreateCustomerBatchRequest"
                         }
                     }
                 ],
@@ -205,7 +211,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/entity.JsonCreated"
+                                    "$ref": "#/definitions/dto.JsonCreated"
                                 },
                                 {
                                     "type": "object",
@@ -221,19 +227,19 @@
                     "400": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/entity.JsonBadRequest"
+                            "$ref": "#/definitions/dto.JsonBadRequest"
                         }
                     },
                     "404": {
                         "description": "Data not found",
                         "schema": {
-                            "$ref": "#/definitions/entity.JsonNotFound"
+                            "$ref": "#/definitions/dto.JsonNotFound"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/entity.JsonInternalServerError"
+                            "$ref": "#/definitions/dto.JsonInternalServerError"
                         }
                     }
                 }
@@ -254,7 +260,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entity.DeleteBatchCustomerRequest"
+                            "$ref": "#/definitions/dto.DeleteBatchCustomerRequest"
                         }
                     }
                 ],
@@ -264,7 +270,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/entity.JsonSuccess"
+                                    "$ref": "#/definitions/dto.JsonSuccess"
                                 },
                                 {
                                     "type": "object",
@@ -280,19 +286,19 @@
                     "400": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/entity.JsonBadRequest"
+                            "$ref": "#/definitions/dto.JsonBadRequest"
                         }
                     },
                     "404": {
                         "description": "Data not found",
                         "schema": {
-                            "$ref": "#/definitions/entity.JsonNotFound"
+                            "$ref": "#/definitions/dto.JsonNotFound"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/entity.JsonInternalServerError"
+                            "$ref": "#/definitions/dto.JsonInternalServerError"
                         }
                     }
                 }
@@ -309,6 +315,13 @@
                 ],
                 "summary": "Export Excel customer.",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "true",
+                        "name": "all",
+                        "in": "query",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "description": "start_date",
@@ -340,7 +353,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/entity.JsonSuccess"
+                                    "$ref": "#/definitions/dto.JsonSuccess"
                                 },
                                 {
                                     "type": "object",
@@ -356,19 +369,19 @@
                     "400": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/entity.JsonBadRequest"
+                            "$ref": "#/definitions/dto.JsonBadRequest"
                         }
                     },
                     "404": {
                         "description": "Data not found",
                         "schema": {
-                            "$ref": "#/definitions/entity.JsonNotFound"
+                            "$ref": "#/definitions/dto.JsonNotFound"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/entity.JsonInternalServerError"
+                            "$ref": "#/definitions/dto.JsonInternalServerError"
                         }
                     }
                 }
@@ -402,7 +415,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/entity.JsonSuccess"
+                                    "$ref": "#/definitions/dto.JsonSuccess"
                                 },
                                 {
                                     "type": "object",
@@ -418,19 +431,19 @@
                     "400": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/entity.JsonBadRequest"
+                            "$ref": "#/definitions/dto.JsonBadRequest"
                         }
                     },
                     "404": {
                         "description": "Data not found",
                         "schema": {
-                            "$ref": "#/definitions/entity.JsonNotFound"
+                            "$ref": "#/definitions/dto.JsonNotFound"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/entity.JsonInternalServerError"
+                            "$ref": "#/definitions/dto.JsonInternalServerError"
                         }
                     }
                 }
@@ -461,13 +474,13 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/entity.JsonSuccess"
+                                    "$ref": "#/definitions/dto.JsonSuccess"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/entity.CustomerResponse"
+                                            "$ref": "#/definitions/dto.CustomerResponse"
                                         }
                                     }
                                 }
@@ -477,19 +490,19 @@
                     "400": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/entity.JsonBadRequest"
+                            "$ref": "#/definitions/dto.JsonBadRequest"
                         }
                     },
                     "404": {
                         "description": "Data not found",
                         "schema": {
-                            "$ref": "#/definitions/entity.JsonNotFound"
+                            "$ref": "#/definitions/dto.JsonNotFound"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/entity.JsonInternalServerError"
+                            "$ref": "#/definitions/dto.JsonInternalServerError"
                         }
                     }
                 }
@@ -510,7 +523,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entity.UpdateCustomerRequest"
+                            "$ref": "#/definitions/dto.UpdateCustomerRequest"
                         }
                     },
                     {
@@ -527,7 +540,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/entity.JsonSuccess"
+                                    "$ref": "#/definitions/dto.JsonSuccess"
                                 },
                                 {
                                     "type": "object",
@@ -543,19 +556,19 @@
                     "400": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/entity.JsonBadRequest"
+                            "$ref": "#/definitions/dto.JsonBadRequest"
                         }
                     },
                     "404": {
                         "description": "Data not found",
                         "schema": {
-                            "$ref": "#/definitions/entity.JsonNotFound"
+                            "$ref": "#/definitions/dto.JsonNotFound"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/entity.JsonInternalServerError"
+                            "$ref": "#/definitions/dto.JsonInternalServerError"
                         }
                     }
                 }
@@ -597,7 +610,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/entity.Response"
+                                    "$ref": "#/definitions/dto.Response"
                                 },
                                 {
                                     "type": "object",
@@ -605,7 +618,7 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/entity.VehicleResponse"
+                                                "$ref": "#/definitions/dto.VehicleResponse"
                                             }
                                         }
                                     }
@@ -618,7 +631,7 @@
         }
     },
     "definitions": {
-        "entity.CreateCustomerBatchRequest": {
+        "dto.CreateCustomerBatchRequest": {
             "type": "object",
             "required": [
                 "customers"
@@ -627,12 +640,12 @@
                 "customers": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/entity.CreateCustomerRequest"
+                        "$ref": "#/definitions/dto.CreateCustomerRequest"
                     }
                 }
             }
         },
-        "entity.CreateCustomerRequest": {
+        "dto.CreateCustomerRequest": {
             "type": "object",
             "required": [
                 "address",
@@ -655,7 +668,7 @@
                 }
             }
         },
-        "entity.CustomerResponse": {
+        "dto.CustomerResponse": {
             "type": "object",
             "properties": {
                 "address": {
@@ -678,7 +691,7 @@
                 }
             }
         },
-        "entity.DeleteBatchCustomerRequest": {
+        "dto.DeleteBatchCustomerRequest": {
             "type": "object",
             "required": [
                 "id"
@@ -692,7 +705,7 @@
                 }
             }
         },
-        "entity.JsonBadRequest": {
+        "dto.JsonBadRequest": {
             "type": "object",
             "properties": {
                 "code": {
@@ -719,7 +732,7 @@
                 }
             }
         },
-        "entity.JsonCreated": {
+        "dto.JsonCreated": {
             "type": "object",
             "properties": {
                 "code": {
@@ -741,7 +754,7 @@
                 }
             }
         },
-        "entity.JsonInternalServerError": {
+        "dto.JsonInternalServerError": {
             "type": "object",
             "properties": {
                 "code": {
@@ -762,7 +775,7 @@
                 }
             }
         },
-        "entity.JsonNotFound": {
+        "dto.JsonNotFound": {
             "type": "object",
             "properties": {
                 "code": {
@@ -783,7 +796,7 @@
                 }
             }
         },
-        "entity.JsonSuccess": {
+        "dto.JsonSuccess": {
             "type": "object",
             "properties": {
                 "code": {
@@ -805,7 +818,7 @@
                 }
             }
         },
-        "entity.Meta": {
+        "dto.Meta": {
             "type": "object",
             "properties": {
                 "limit": {
@@ -822,7 +835,7 @@
                 }
             }
         },
-        "entity.Response": {
+        "dto.Response": {
             "type": "object",
             "properties": {
                 "code": {
@@ -833,7 +846,7 @@
                     "type": "string"
                 },
                 "meta": {
-                    "$ref": "#/definitions/entity.Meta"
+                    "$ref": "#/definitions/dto.Meta"
                 },
                 "status": {
                     "type": "string"
@@ -843,7 +856,7 @@
                 }
             }
         },
-        "entity.UpdateCustomerRequest": {
+        "dto.UpdateCustomerRequest": {
             "type": "object",
             "required": [
                 "address",
@@ -870,7 +883,7 @@
                 }
             }
         },
-        "entity.VehicleResponse": {
+        "dto.VehicleResponse": {
             "type": "object",
             "properties": {
                 "driver_id": {

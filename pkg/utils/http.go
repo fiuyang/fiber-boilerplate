@@ -2,10 +2,10 @@ package utils
 
 import (
 	"context"
-	"scylla/entity"
+	"scylla/dto"
 )
 
-func ResponseInterceptor(ctx context.Context, resp *entity.Response) {
+func ResponseInterceptor(ctx context.Context, resp *dto.Response) {
 	traceIdInf := ctx.Value("requestid")
 	traceId := ""
 	if traceIdInf != nil {

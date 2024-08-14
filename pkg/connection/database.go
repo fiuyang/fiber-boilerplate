@@ -1,24 +1,25 @@
-package config
+package connection
 
 import (
 	"fmt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"scylla/pkg/config"
+	"scylla/pkg/engine"
 	"scylla/pkg/exception"
 	"time"
 )
 
-func ConnectionDB(config *Config) *gorm.DB {
-
-	sqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", config.DBHost, config.DBPort, config.DBUsername, config.DBPassword, config.DBName)
+func GetDatabase(conf config.Database) *gorm.DB {
+	sqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		conf.Host, conf.Port, conf.User, conf.Pass, conf.Name)
 
 	db, err := gorm.Open(postgres.Open(sqlInfo), &gorm.Config{
 		PrepareStmt:            true,
 		SkipDefaultTransaction: true,
 		Logger:                 logger.Default.LogMode(logger.Info),
 	})
-
 	if err != nil {
 		panic(exception.NewInternalServerErrorHandler(err.Error()))
 	}
@@ -31,6 +32,8 @@ func ConnectionDB(config *Config) *gorm.DB {
 	connection.SetMaxIdleConns(10)
 	connection.SetMaxOpenConns(100)
 	connection.SetConnMaxLifetime(time.Second * time.Duration(300))
+
+	engine.Instance = db
 
 	fmt.Println("🚀 Connected Successfully to the Database")
 	return db

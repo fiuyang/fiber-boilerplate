@@ -7,8 +7,8 @@ import (
 	"github.com/xuri/excelize/v2"
 	"golang.org/x/sync/errgroup"
 	"math"
+	"scylla/dto"
 	"scylla/entity"
-	"scylla/model"
 	"scylla/pkg/exception"
 	"scylla/pkg/helper"
 	"scylla/repository"
@@ -17,15 +17,14 @@ import (
 )
 
 type CustomerService interface {
-	Create(ctx context.Context, request entity.CreateCustomerRequest)
-	CreateBatch(ctx context.Context, request entity.CreateCustomerBatchRequest)
-	Update(ctx context.Context, request entity.UpdateCustomerRequest)
-	DeleteBatch(ctx context.Context, request entity.DeleteBatchCustomerRequest)
-	FindById(ctx context.Context, request entity.CustomerParams) (response entity.CustomerResponse)
-	FindAll(ctx context.Context, dataFilter entity.CustomerQueryFilter) (response []entity.CustomerResponse)
-	FindAllPaging(ctx context.Context, dataFilter entity.CustomerQueryFilter) (response []entity.CustomerResponse, paging entity.Meta)
-	Export(ctx context.Context, dataFilter entity.CustomerQueryFilter) (string, error)
-	Import(ctx context.Context, request entity.UploadCustomerRequest) error
+	Create(ctx context.Context, request dto.CreateCustomerRequest)
+	CreateBatch(ctx context.Context, request dto.CreateCustomerBatchRequest)
+	Update(ctx context.Context, request dto.UpdateCustomerRequest)
+	DeleteBatch(ctx context.Context, request dto.DeleteBatchCustomerRequest)
+	FindById(ctx context.Context, request dto.CustomerParams) (response dto.CustomerResponse)
+	FindAll(ctx context.Context, dataFilter dto.CustomerQueryFilter) (response []dto.CustomerResponse, paging dto.Meta)
+	Export(ctx context.Context, dataFilter dto.CustomerQueryFilter) (string, error)
+	Import(ctx context.Context, request dto.UploadCustomerRequest) error
 }
 
 type CustomerServiceImpl struct {
@@ -40,11 +39,11 @@ func NewCustomerServiceImpl(customerRepo repository.CustomerRepo, validate *vali
 	}
 }
 
-func (service *CustomerServiceImpl) Create(ctx context.Context, request entity.CreateCustomerRequest) {
+func (service *CustomerServiceImpl) Create(ctx context.Context, request dto.CreateCustomerRequest) {
 	err := service.validate.Struct(request)
 	helper.ErrorPanic(err)
 
-	dataset := model.Customer{
+	dataset := entity.Customer{
 		Username: request.Username,
 		Email:    request.Email,
 		Phone:    request.Phone,
@@ -57,13 +56,13 @@ func (service *CustomerServiceImpl) Create(ctx context.Context, request entity.C
 	}
 }
 
-func (service *CustomerServiceImpl) CreateBatch(ctx context.Context, request entity.CreateCustomerBatchRequest) {
+func (service *CustomerServiceImpl) CreateBatch(ctx context.Context, request dto.CreateCustomerBatchRequest) {
 	err := service.validate.Struct(request)
 	helper.ErrorPanic(err)
 
-	var customers []model.Customer
+	var customers []entity.Customer
 	for _, req := range request.Customers {
-		customer := model.Customer{
+		customer := entity.Customer{
 			Username: req.Username,
 			Email:    req.Email,
 			Phone:    req.Phone,
@@ -80,7 +79,7 @@ func (service *CustomerServiceImpl) CreateBatch(ctx context.Context, request ent
 	}
 }
 
-func (service *CustomerServiceImpl) Update(ctx context.Context, request entity.UpdateCustomerRequest) {
+func (service *CustomerServiceImpl) Update(ctx context.Context, request dto.UpdateCustomerRequest) {
 	err := service.validate.Struct(request)
 	helper.ErrorPanic(err)
 
@@ -100,7 +99,7 @@ func (service *CustomerServiceImpl) Update(ctx context.Context, request entity.U
 	}
 }
 
-func (service *CustomerServiceImpl) DeleteBatch(ctx context.Context, request entity.DeleteBatchCustomerRequest) {
+func (service *CustomerServiceImpl) DeleteBatch(ctx context.Context, request dto.DeleteBatchCustomerRequest) {
 	err := service.validate.Struct(request)
 	helper.ErrorPanic(err)
 
@@ -110,7 +109,7 @@ func (service *CustomerServiceImpl) DeleteBatch(ctx context.Context, request ent
 	}
 }
 
-func (service *CustomerServiceImpl) FindById(ctx context.Context, request entity.CustomerParams) (response entity.CustomerResponse) {
+func (service *CustomerServiceImpl) FindById(ctx context.Context, request dto.CustomerParams) (response dto.CustomerResponse) {
 	result, err := service.customerRepo.FindById(ctx, request.CustomerId)
 
 	if err != nil {
@@ -121,27 +120,12 @@ func (service *CustomerServiceImpl) FindById(ctx context.Context, request entity
 	return response
 }
 
-func (service *CustomerServiceImpl) FindAll(ctx context.Context, dataFilter entity.CustomerQueryFilter) (response []entity.CustomerResponse) {
-	result, err := service.customerRepo.FindAll(ctx, dataFilter)
+func (service *CustomerServiceImpl) FindAll(ctx context.Context, dataFilter dto.CustomerQueryFilter) (response []dto.CustomerResponse, paging dto.Meta) {
 
-	if err != nil {
-		panic(exception.NewInternalServerErrorHandler(err.Error()))
-	}
-
-	for _, row := range result {
-		var res entity.CustomerResponse
-		helper.Automapper(row, &res)
-		response = append(response, res)
-	}
-	return response
-}
-
-func (service *CustomerServiceImpl) FindAllPaging(ctx context.Context, dataFilter entity.CustomerQueryFilter) (response []entity.CustomerResponse, paging entity.Meta) {
-
-	result := service.customerRepo.FindAllPaging(ctx, dataFilter)
+	result, total := service.customerRepo.FindAll(ctx, dataFilter)
 
 	for _, value := range result {
-		var res entity.CustomerResponse
+		var res dto.CustomerResponse
 		helper.Automapper(value, &res)
 
 		response = append(response, res)
@@ -155,22 +139,15 @@ func (service *CustomerServiceImpl) FindAllPaging(ctx context.Context, dataFilte
 		dataFilter.Page = 1
 	}
 
-	var total int
-	if len(result) > 0 {
-		total = len(result)
-	} else {
-		total = 0
-	}
-
 	paging.Page = dataFilter.Page
 	paging.Limit = dataFilter.Limit
-	paging.TotalData = total
+	paging.TotalData = int(total)
 	paging.TotalPage = int(math.Ceil(float64(total) / float64(dataFilter.Limit)))
 
 	return response, paging
 }
 
-func (service *CustomerServiceImpl) Export(ctx context.Context, dataFilter entity.CustomerQueryFilter) (string, error) {
+func (service *CustomerServiceImpl) Export(ctx context.Context, dataFilter dto.CustomerQueryFilter) (string, error) {
 	excel := excelize.NewFile()
 	defer func() {
 		if err := excel.Close(); err != nil {
@@ -190,10 +167,7 @@ func (service *CustomerServiceImpl) Export(ctx context.Context, dataFilter entit
 		return "", exception.NewInternalServerErrorHandler(err.Error())
 	}
 
-	result, err := service.customerRepo.FindAll(ctx, dataFilter)
-	if err != nil {
-		return "", exception.NewInternalServerErrorHandler(err.Error())
-	}
+	result, _ := service.customerRepo.FindAll(ctx, dataFilter)
 
 	fmt.Println("data", result)
 
@@ -241,7 +215,7 @@ func (service *CustomerServiceImpl) Export(ctx context.Context, dataFilter entit
 	return filePath, nil
 }
 
-func (service *CustomerServiceImpl) Import(ctx context.Context, request entity.UploadCustomerRequest) error {
+func (service *CustomerServiceImpl) Import(ctx context.Context, request dto.UploadCustomerRequest) error {
 	// Open the Excel file from the request
 	src, err := request.File.Open()
 	if err != nil {
@@ -266,7 +240,7 @@ func (service *CustomerServiceImpl) Import(ctx context.Context, request entity.U
 
 	// Use error group to manage concurrent operations
 	g, _ := errgroup.WithContext(ctx)
-	chanUser := make(chan model.Customer)
+	chanUser := make(chan entity.Customer)
 	excelValidation := exception.ExcelValidation{}
 	uniqueTracker := make(map[string]map[string]bool)
 	rowErrors := map[string][]string{}
@@ -337,7 +311,7 @@ func (service *CustomerServiceImpl) Import(ctx context.Context, request entity.U
 			if len(row) < 4 {
 				return fmt.Errorf("invalid row length: %v", row)
 			}
-			customer := model.Customer{
+			customer := entity.Customer{
 				Username: row[0],
 				Email:    row[1],
 				Phone:    row[2],
@@ -358,7 +332,7 @@ func (service *CustomerServiceImpl) Import(ctx context.Context, request entity.U
 	}()
 
 	// Collect customers from the channel
-	var customers []model.Customer
+	var customers []entity.Customer
 	for customer := range chanUser {
 		customers = append(customers, customer)
 	}

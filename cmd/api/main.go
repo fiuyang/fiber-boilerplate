@@ -2,13 +2,13 @@ package main
 
 import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"scylla/entity"
+	"scylla/dto"
 	"scylla/handler"
 	"scylla/pkg/config"
+	"scylla/pkg/connection"
 	"scylla/pkg/exception"
 	"scylla/pkg/utils"
 	"scylla/repository"
-	"scylla/routes"
 	"scylla/service"
 
 	"github.com/gofiber/fiber/v2"
@@ -29,40 +29,31 @@ import (
 //	@description				Type "Bearer" followed by a space and JWT token.
 
 func main() {
-	loadConfig, err := config.LoadConfig(".")
-	if err != nil {
-		panic(exception.NewInternalServerErrorHandler(err.Error()))
-	}
+	//config
+	conf := config.Get()
 
-	//Database
-	db := config.ConnectionDB(&loadConfig)
+	//database
+	db := connection.GetDatabase(conf.Database)
 
 	//Validate
-	validate := utils.InitializeValidator(db)
+	validate := utils.InitializeValidator()
 
 	// environment swagger
-	if loadConfig.Environment != "dev" {
-		docs.SwaggerInfo.Host = loadConfig.SwaggerHost
-		docs.SwaggerInfo.BasePath = loadConfig.SwaggerUrl
+	if conf.Swagger.Mode != "dev" {
+		docs.SwaggerInfo.Host = conf.Swagger.Host
+		docs.SwaggerInfo.BasePath = conf.Swagger.Url
 	} else {
 		docs.SwaggerInfo.Host = "localhost:3000"
 		docs.SwaggerInfo.BasePath = "/api/v1"
 	}
 	// init repository
 	customerRepo := repository.NewCustomerRepoImpl(db)
-
 	// init service
 	customerService := service.NewCustomerServiceImpl(customerRepo, validate)
 	dmsService := service.NewDmsServiceImpl()
 	// init handler
 	customerHandler := handler.NewCustomerHandler(customerService)
 	dmsHandler := handler.NewDmsHandler(dmsService)
-
-	//routes v1
-	routesV1 := routes.NewRoutesV1(
-		dmsHandler,
-		customerHandler,
-	)
 
 	app := fiber.New(fiber.Config{
 		ErrorHandler: exception.ExceptionHandlers,
@@ -73,11 +64,14 @@ func main() {
 	app.Use(logger.New(logger.Config{
 		Format: "[${locals:requestid}] ${ip} - ${method} ${status} ${path} - ${latency}\n",
 	}))
-	app.Mount("/api/v1", routesV1)
+	//routes v1
+	customerHandler.Route(app)
+	dmsHandler.Route(app)
+	//docs
 	app.Get("/docs/*", fiberSwagger.WrapHandler)
 	//endpoint not found
 	app.Use(func(ctx *fiber.Ctx) error {
-		return ctx.Status(fiber.StatusNotFound).JSON(entity.Error{
+		return ctx.Status(fiber.StatusNotFound).JSON(dto.Error{
 			Code:    fiber.StatusNotFound,
 			Status:  "NOT FOUND",
 			Errors:  "Page Not Found",
@@ -85,7 +79,7 @@ func main() {
 		})
 	})
 	//start
-	err = app.Listen(":" + loadConfig.ServerPort)
+	err := app.Listen(":" + conf.Server.Port)
 	if err != nil {
 		panic(err)
 	}

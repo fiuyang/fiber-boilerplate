@@ -1,4 +1,4 @@
-package entity
+package dto
 
 type VehicleResponse struct {
 	VehicleID   int64   `json:"vehicle_id"`

@@ -30,22 +30,22 @@ Before you running the program, make sure you've run this command:
 
 ### Migrate Up
 ```bash
-  make migrateUp
+ make migrateUp
 ```
 
 ### Migrate Down
 ```bash
-  make migrateDown
+ make migrateDown
 ```
 
 ### Migrate Fix
 ```bash
-  make migrateForce command={version}
+ make migrateForce command={version}
 ```
 
 ### Migrate Drop
 ```bash
-  make migrateDrop
+ make migrateDrop
 ```
 
 ### Check Docs Swagger

@@ -6,13 +6,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"scylla/entity"
+	"scylla/dto"
 	"scylla/pkg/config"
-	"scylla/pkg/exception"
 )
 
 type DmsService interface {
-	GetVehicle(ctx context.Context, dataFilter entity.GeneralQueryFilter) ([]entity.VehicleResponse, entity.Meta, error)
+	GetVehicle(ctx context.Context, dataFilter dto.GeneralQueryFilter) ([]dto.VehicleResponse, dto.Meta, error)
 }
 
 type DmsServiceImpl struct{}
@@ -21,27 +20,31 @@ func NewDmsServiceImpl() DmsService {
 	return &DmsServiceImpl{}
 }
 
-func (service *DmsServiceImpl) GetVehicle(ctx context.Context, dataFilter entity.GeneralQueryFilter) ([]entity.VehicleResponse, entity.Meta, error) {
-	config, err := config.LoadConfig(".")
+func (service *DmsServiceImpl) GetVehicle(ctx context.Context, dataFilter dto.GeneralQueryFilter) ([]dto.VehicleResponse, dto.Meta, error) {
+	config := config.Get()
 
-	if err != nil {
-		panic(exception.NewInternalServerErrorHandler(err.Error()))
+	if dataFilter.Page == 0 {
+		dataFilter.Page = 1
 	}
 
-	endpointURL := fmt.Sprintf("%s/master/v1/vehicles?q=&page=%d&limit=%d&is_active=%d", config.KongUrl, dataFilter.Page, dataFilter.Limit, dataFilter.IsActive)
+	if dataFilter.Limit == 0 {
+		dataFilter.Limit = 10
+	}
+
+	endpointURL := fmt.Sprintf("%s/master/v1/vehicles?q=&page=%d&limit=%d&is_active=%d", config.Kong.Url, dataFilter.Page, dataFilter.Limit, dataFilter.IsActive)
 	req, err := http.NewRequestWithContext(ctx, "GET", endpointURL, nil)
 	if err != nil {
-		return nil, entity.Meta{}, err
+		return nil, dto.Meta{}, err
 	}
 	req.Header.Set("cust_id", "C220010001")
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, entity.Meta{}, err
+		return nil, dto.Meta{}, err
 	}
 	defer resp.Body.Close()
 
 	var response struct {
-		Data   []entity.VehicleResponse `json:"data"`
+		Data   []dto.VehicleResponse `json:"data"`
 		Paging struct {
 			TotalRecord int `json:"total_record"`
 			PageCurrent int `json:"page_current"`
@@ -52,14 +55,14 @@ func (service *DmsServiceImpl) GetVehicle(ctx context.Context, dataFilter entity
 	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
-		return nil, entity.Meta{}, err
+		return nil, dto.Meta{}, err
 	}
 
 	if err := json.Unmarshal(body, &response); err != nil {
-		return nil, entity.Meta{}, err
+		return nil, dto.Meta{}, err
 	}
 
-	pagination := &entity.Meta{
+	pagination := &dto.Meta{
 		TotalData: response.Paging.TotalRecord,
 		Page:      response.Paging.PageCurrent,
 		Limit:     response.Paging.PageLimit,
