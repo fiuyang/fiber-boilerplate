@@ -6,6 +6,7 @@ import (
 	"scylla/handler"
 	"scylla/pkg/config"
 	"scylla/pkg/connection"
+	"scylla/pkg/engine"
 	"scylla/pkg/exception"
 	"scylla/pkg/utils"
 	"scylla/repository"
@@ -78,9 +79,6 @@ func main() {
 			TraceID: ctx.Locals("requestid").(string),
 		})
 	})
-	//start
-	err := app.Listen(":" + conf.Server.Port)
-	if err != nil {
-		panic(err)
-	}
+	// Start the server with graceful shutdown
+	engine.StartServerWithGracefulShutdown(app)
 }
